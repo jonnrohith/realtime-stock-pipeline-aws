@@ -1,0 +1,202 @@
+version: 2
+
+sources:
+  - name: raw_financial_data
+    description: "Raw financial data from Yahoo Finance API"
+    tables:
+      - name: stock_quotes
+        description: "Real-time stock quotes"
+        columns:
+          - name: symbol
+            description: "Stock symbol"
+            tests:
+              - not_null
+              - unique
+          - name: price
+            description: "Current stock price"
+            tests:
+              - not_null
+          - name: volume
+            description: "Trading volume"
+          - name: timestamp
+            description: "Quote timestamp"
+            tests:
+              - not_null
+      
+      - name: market_screeners
+        description: "Market screener data (gainers, losers, most active)"
+        columns:
+          - name: symbol
+            description: "Stock symbol"
+            tests:
+              - not_null
+          - name: screener_type
+            description: "Type of screener (day_gainers, day_losers, etc.)"
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ['day_gainers', 'day_losers', 'most_actives']
+          - name: rank
+            description: "Rank in the screener"
+      
+      - name: stock_news
+        description: "Stock news and market updates"
+        columns:
+          - name: symbol
+            description: "Stock symbol"
+            tests:
+              - not_null
+          - name: title
+            description: "News title"
+            tests:
+              - not_null
+          - name: published_time
+            description: "News publication time"
+      
+      - name: stock_history
+        description: "Historical stock price data"
+        columns:
+          - name: symbol
+            description: "Stock symbol"
+            tests:
+              - not_null
+          - name: date
+            description: "Trading date"
+            tests:
+              - not_null
+          - name: close
+            description: "Closing price"
+            tests:
+              - not_null
+
+models:
+  - name: dim_stocks
+    description: "Stock dimension table"
+    columns:
+      - name: stock_id
+        description: "Unique stock identifier"
+        tests:
+          - unique
+          - not_null
+      - name: symbol
+        description: "Stock symbol"
+        tests:
+          - unique
+          - not_null
+      - name: name
+        description: "Company name"
+      - name: sector
+        description: "Business sector"
+      - name: industry
+        description: "Industry classification"
+      - name: market_cap_category
+        description: "Market cap category (Mega, Large, Mid, Small, Micro)"
+      - name: is_active
+        description: "Whether the stock is currently active"
+        tests:
+          - accepted_values:
+              values: [true, false]
+
+  - name: fact_stock_quotes
+    description: "Fact table for stock quotes"
+    columns:
+      - name: quote_id
+        description: "Unique quote identifier"
+        tests:
+          - unique
+          - not_null
+      - name: stock_id
+        description: "Foreign key to dim_stocks"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_stocks')
+              field: stock_id
+      - name: quote_timestamp
+        description: "Quote timestamp"
+        tests:
+          - not_null
+      - name: price
+        description: "Stock price"
+        tests:
+          - not_null
+      - name: volume
+        description: "Trading volume"
+      - name: change_percent
+        description: "Price change percentage"
+      - name: market_cap
+        description: "Market capitalization"
+
+  - name: fact_market_performance
+    description: "Daily market performance metrics"
+    columns:
+      - name: performance_id
+        description: "Unique performance identifier"
+        tests:
+          - unique
+          - not_null
+      - name: date
+        description: "Trading date"
+        tests:
+          - not_null
+      - name: total_stocks
+        description: "Total number of stocks tracked"
+      - name: gainers
+        description: "Number of stocks that gained"
+      - name: losers
+        description: "Number of stocks that lost"
+      - name: avg_change_percent
+        description: "Average change percentage"
+      - name: total_volume
+        description: "Total trading volume"
+      - name: market_sentiment
+        description: "Overall market sentiment (Bullish, Bearish, Neutral)"
+
+  - name: fact_news_sentiment
+    description: "News sentiment analysis"
+    columns:
+      - name: news_id
+        description: "Unique news identifier"
+        tests:
+          - unique
+          - not_null
+      - name: stock_id
+        description: "Foreign key to dim_stocks"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_stocks')
+              field: stock_id
+      - name: published_time
+        description: "News publication time"
+        tests:
+          - not_null
+      - name: sentiment_score
+        description: "Sentiment score (-1 to 1)"
+      - name: news_category
+        description: "News category (Financial, M&A, Product, etc.)"
+      - name: word_count
+        description: "Number of words in the news"
+
+  - name: mart_daily_summary
+    description: "Daily summary mart for reporting"
+    columns:
+      - name: date
+        description: "Trading date"
+        tests:
+          - unique
+          - not_null
+      - name: total_stocks
+        description: "Total stocks tracked"
+      - name: avg_price
+        description: "Average stock price"
+      - name: total_volume
+        description: "Total trading volume"
+      - name: market_sentiment
+        description: "Market sentiment"
+      - name: top_gainer
+        description: "Top gaining stock"
+      - name: top_loser
+        description: "Top losing stock"
+      - name: news_count
+        description: "Number of news articles"

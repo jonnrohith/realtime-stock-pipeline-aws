@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  spark:
+    image: ${ECR_SPARK_IMAGE:-public.ecr.aws/docker/library/bitnami/spark:3.5}
+    environment:
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
+      - S3_BUCKET=${S3_BUCKET:-financial-data-lake-demo}
+    command: ["/bin/bash", "-lc", "pip install boto3 pyarrow && tail -f /dev/null"]
+    volumes:
+      - ./:/workspace
+    working_dir: /workspace
+
+

@@ -1,0 +1,77 @@
+name: 'financial_data_pipeline'
+version: '1.0.0'
+config-version: 2
+
+# This setting configures which "profile" dbt uses for this project.
+profile: 'financial_data_pipeline'
+
+# These configurations specify where dbt should look for different types of files.
+# The `model-paths` config, for example, states that models in this project can be
+# found in the "models/" directory. You probably won't need to change these!
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# Configuring models
+# Full documentation: https://docs.getdbt.com/reference/model-configs
+models:
+  financial_data_pipeline:
+    # Config indicated by + and applies to all files under models/example/
+    +materialized: table
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table
+      +schema: analytics
+
+# Configuring tests
+# Full documentation: https://docs.getdbt.com/reference/test-configs
+tests:
+  financial_data_pipeline:
+    +store_failures: true
+
+# Configuring seeds
+# Full documentation: https://docs.getdbt.com/reference/seed-configs
+seeds:
+  financial_data_pipeline:
+    +schema: raw
+    +materialized: table
+
+# Configuring snapshots
+# Full documentation: https://docs.getdbt.com/reference/snapshot-configs
+snapshots:
+  financial_data_pipeline:
+    +target_schema: snapshots
+    +strategy: timestamp
+    +updated_at: updated_at
+
+# Configuring packages
+# Full documentation: https://docs.getdbt.com/reference/project-configs/packages
+packages:
+  - package: dbt-labs/dbt_utils
+    version: 1.1.1
+  - package: calogica/dbt_expectations
+    version: 0.9.0
+
+# Configuring variables
+# Full documentation: https://docs.getdbt.com/reference/variables
+vars:
+  # dbt project variables
+  start_date: '2024-01-01'
+  end_date: '2024-12-31'
+  
+  # Data quality thresholds
+  min_volume: 1000
+  max_price_change: 50.0
+  
+  # Business logic
+  market_hours_start: 9
+  market_hours_end: 16
+  weekend_days: [0, 6]  # Sunday, Saturday

@@ -1,0 +1,52 @@
+financial_data_pipeline:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: localhost
+      user: postgres
+      password: password
+      port: 5432
+      dbname: financial_data
+      schema: public
+      threads: 4
+      keepalives_idle: 0
+      search_path: public
+      
+    prod:
+      type: postgres
+      host: your-prod-host
+      user: your-prod-user
+      password: "{{ env_var('DBT_PROD_PASSWORD') }}"
+      port: 5432
+      dbname: financial_data
+      schema: analytics
+      threads: 8
+      keepalives_idle: 0
+      search_path: analytics, public
+      
+    # Alternative: BigQuery configuration
+    bigquery:
+      type: bigquery
+      method: service-account
+      project: your-gcp-project
+      dataset: financial_data
+      keyfile: /path/to/service-account.json
+      threads: 4
+      timeout_seconds: 300
+      location: US
+      priority: interactive
+      
+    # Alternative: Snowflake configuration
+    snowflake:
+      type: snowflake
+      account: your-account
+      user: your-user
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role: your-role
+      database: financial_data
+      warehouse: compute_wh
+      schema: analytics
+      threads: 4
+      client_session_keep_alive: False
+      query_tag: dbt
