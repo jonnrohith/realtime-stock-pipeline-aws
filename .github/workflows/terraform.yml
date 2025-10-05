@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AWS_REGION: us-east-1
+      AWS_TERRAFORM_ROLE_ARN: ${{ secrets.AWS_TERRAFORM_ROLE_ARN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,25 +36,25 @@ jobs:
 
       # If the AWS role secret exists, configure credentials and run plan/apply
       - name: Configure AWS credentials (OIDC)
-        if: ${{ secrets.AWS_TERRAFORM_ROLE_ARN != '' }}
+        if: ${{ env.AWS_TERRAFORM_ROLE_ARN != '' }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_TERRAFORM_ROLE_ARN }}
+          role-to-assume: ${{ env.AWS_TERRAFORM_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Terraform Init (with backend)
-        if: ${{ secrets.AWS_TERRAFORM_ROLE_ARN != '' }}
+        if: ${{ env.AWS_TERRAFORM_ROLE_ARN != '' }}
         working-directory: infra/terraform
         run: terraform init -input=false
 
       - name: Terraform Plan
-        if: ${{ secrets.AWS_TERRAFORM_ROLE_ARN != '' }}
+        if: ${{ env.AWS_TERRAFORM_ROLE_ARN != '' }}
         working-directory: infra/terraform
         run: terraform plan -input=false -lock=false -out=tfplan
 
       # Optional apply on push to main when explicitly enabled
       - name: Terraform Apply
-        if: ${{ secrets.AWS_TERRAFORM_ROLE_ARN != '' && github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.TERRAFORM_AUTO_APPLY == 'true' }}
+        if: ${{ env.AWS_TERRAFORM_ROLE_ARN != '' && github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.TERRAFORM_AUTO_APPLY == 'true' }}
         working-directory: infra/terraform
         run: terraform apply -input=false -auto-approve tfplan
 
