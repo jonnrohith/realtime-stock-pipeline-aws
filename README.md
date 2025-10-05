@@ -108,6 +108,44 @@ Setup:
 - `data_lake/s3_storage.py` – S3 read/write helpers
 - `orchestration/airflow_dag.py` – example DAG
 
+## Yahoo API Coverage
+
+This pipeline uses Yahoo Finance endpoints via the included clients (`yahoo_client.py`, `updated_yahoo_client.py`) and extractors in `stocks_extractor.py` / `data_pipeline/extractors.py`:
+
+- Tickers and market screeners: symbol discovery and universe selection
+- Quotes: real-time prices, bid/ask, volume, change, market cap
+- Historical OHLCV: daily bars with open/high/low/close/adj_close/volume
+- News: headline, source, published_at, link, summary
+
+Typical raw-to-modeled mapping (examples):
+- `quote.regularMarketPrice` → `quotes.price`
+- `quote.regularMarketVolume` → `quotes.volume`
+- `indicators.quote[0].open/close/high/low` → `ohlcv.open/close/high/low`
+- `meta.symbol` → `symbol`
+- `news.title/summary/publisher/published_at` → normalized news model
+
+Extraction examples live in `stocks_example.py`, `comprehensive_stocks_example.py`, and `pipeline_example.py`.
+
+## Data Transformations
+
+Transformations run in two places: PySpark (batch/stream) and dbt (analytics modeling).
+
+PySpark (see `streaming_pipeline/pyspark_streaming.py`, `data_pipeline/transformers.py`):
+- Cleaning: drop null/invalid records, deduplicate by `symbol` + `timestamp`
+- Casting: numeric fields to double/long, timestamps to UTC
+- Enrichment: percent_change, daily_return, rolling averages (optional)
+- Aggregations: windowed OHLCV summaries, top performers by return/volume
+- Partitioning: write Parquet partitioned by `date=YYYY-MM-DD` and `symbol`
+
+dbt models (see `dbt_models/models`):
+- Staging: normalize raw → typed columns and semantic names
+- Marts:
+  - `fact_stock_quotes.sql`: atomic quote facts with derived metrics
+  - `dim_stocks.sql`: symbols metadata
+  - `mart_daily_summary.sql`: per-symbol daily aggregates and top movers
+
+Data quality checks (dbt tests) verify non-null keys, valid ranges, and uniqueness.
+
 ## Troubleshooting
 - OIDC assume error: verify provider URL, trust `sub` (refs/heads/main), and secret ARN
 - S3 errors: confirm bucket names/region and credentials; for local, use MinIO env in examples
