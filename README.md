@@ -1,8 +1,14 @@
 # AWS Financial Data Pipeline (Yahoo → Kafka → Spark → S3 → dbt)
 
+[![CI](https://github.com/jonnrohith/realtime-stock-pipeline-aws/actions/workflows/terraform.yml/badge.svg)](https://github.com/jonnrohith/realtime-stock-pipeline-aws/actions/workflows/terraform.yml)
+![Cloud](https://img.shields.io/badge/Cloud-AWS-orange)
+![Infra](https://img.shields.io/badge/IaC-Terraform-7B42BC)
+
 An end-to-end, cloud-ready data engineering pipeline for real-time and batch stock market data using Yahoo Finance. The project includes streaming with Kafka, processing with PySpark, storage in S3 (or MinIO locally), transformations with dbt, and optional EMR integration. CI uses GitHub Actions and Terraform IaC lives under `infra/terraform`.
 
 See `AWS_DEPLOYMENT_GUIDE.md` for cloud deployment steps and `.github/workflows/terraform.yml` for CI.
+
+![Architecture](docs/architecture-diagram.svg)
 
 ## Features
 
