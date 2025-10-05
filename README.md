@@ -1,10 +1,12 @@
-# Walmart API Data Sourcing System
+# AWS Financial Data Pipeline (Yahoo → Kafka → Spark → S3 → dbt)
 
-A comprehensive Python-based data engineering solution for sourcing product data from Walmart using the RapidAPI platform. This system provides robust data extraction, transformation, and storage capabilities with built-in error handling, rate limiting, and job monitoring.
+An end-to-end, cloud-ready data engineering pipeline for real-time and batch stock market data using Yahoo Finance. The project includes streaming with Kafka, processing with PySpark, storage in S3 (or MinIO locally), transformations with dbt, and optional EMR integration. CI uses GitHub Actions and Terraform IaC lives under `infra/terraform`.
+
+See `AWS_DEPLOYMENT_GUIDE.md` for cloud deployment steps and `.github/workflows/terraform.yml` for CI.
 
 ## Features
 
-- **API Integration**: Seamless integration with Walmart RapidAPI
+- **Market Data Integration**: Yahoo Finance clients and extractors
 - **Data Models**: Structured data models using Pydantic for type safety
 - **Rate Limiting**: Built-in rate limiting to respect API limits
 - **Error Handling**: Comprehensive error handling with retry logic
@@ -13,6 +15,7 @@ A comprehensive Python-based data engineering solution for sourcing product data
 - **Async Support**: Asynchronous API calls for better performance
 - **Logging**: Structured logging with configurable levels
 - **Data Validation**: Automatic data validation and parsing
+ - **Cloud-Ready**: S3 data lake, optional EMR cluster, Terraform, and CI
 
 ## Installation
 
